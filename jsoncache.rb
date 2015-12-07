@@ -8,11 +8,11 @@ module JSONCache
   # @param [String] uri the uri in which to check for a cached call.
   # @param [boolean] stale whether or not a cached file can go stale.
   # @param [Fixnum] delta the upperbound timestamp difference of a valid cache.
-  def cached?(uri, stale, delta = 0)
+  def cached?(uri, delta = 0)
     timestamp = timestamp_from_uri(uri)
     if timestamp.zero?
       false
-    elsif stale
+    elsif !delta.zero?
       (Time.now.to_i - timestamp) < delta
     else
       true
