@@ -1,6 +1,5 @@
 require 'spec_helper'
-require 'pp'
-require_relative '../jsoncache'
+require 'jsoncache'
 
 # Simple Test Class for the JSONCache Module
 class JSONCacheTest
