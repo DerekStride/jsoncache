@@ -8,10 +8,10 @@ A simple JSON Cache for use with HTTP APIs
 require 'jsoncache'
 ```
 
-You need to need to set the `@cache_directory` instance variable and implement the `uri_to_file_path_root(uri)` in order for the mixin to function properly.
+You need to mixin the JSONCache module to your class that requires caching, see an example of using it below.
 
-After that you should be able to call the caching functions
-* `cache(key, delta = 0)`
+After that you should be able to call the caching functions most importantly
+* `cache(key, delta = 0, &block)`
 
 ## Example
 
