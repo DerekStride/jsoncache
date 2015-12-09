@@ -11,9 +11,7 @@ require 'jsoncache'
 You need to need to set the `@cache_directory` instance variable and implement the `uri_to_file_path_root(uri)` in order for the mixin to function properly.
 
 After that you should be able to call the caching functions
-* `cached?(uri, delta = 0)`
-* `cache_file(response, uri)`
-* `retrieve_cache(uri, params = {})`
+* `cache(key, delta = 0)`
 
 ## Example
 
@@ -22,12 +20,11 @@ After that you should be able to call the caching functions
 class JSONCacheTest
   include JSONCache
 
-  def initialize
-    @cache_directory = 'test'
-  end
-
-  def uri_to_file_path_root(uri)
-    uri.gsub(%r{[\.\/]|https:\/\/.*v\d\.\d|\?api=.*}, '')
+  def query(uri, timeout = 0)
+    cache(uri_to_key(uri), timeout) do
+      response = HTTP.get_response(uri)
+      JSON.parse(response.body) if response.code = '200'
+    end
   end
 end
 ```
