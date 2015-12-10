@@ -6,22 +6,26 @@ A simple JSON Cache for use with HTTP APIs
 
 ```ruby
 require 'jsoncache'
+JSONCache.cache(key, options) do
+  # Code that returns a Hash
+end
 ```
 
-You need to mixin the JSONCache module to your class that requires caching, see an example of using it below.
-
-After that you should be able to call the caching functions most importantly
-* `cache(key, delta = 0, &block)`
+The cache method takes a key that identifies that cached data. The options parameter can be used to configure the results and operation. The acceptable keys are as followed.
+* cache_directory: String - The name of the directory where to store the cache. Default: 'jsoncache' (Internally stored at /tmp/{cache_directory})
+* symbolize: Boolean - Whether or not to use symbolize_json flag while parsing
+* delta: Fixnum - The expiry time in seconds.
 
 ## Example
 
 ```ruby
 # Simple Test Class for the JSONCache Module
 class JSONCacheTest
-  include JSONCache
-
   def query(uri, timeout = 0)
-    cache(uri_to_key(uri), timeout) do
+    JSONCache.cache(uri_to_key(uri),
+                    cache_directory: 'example',
+                    symbolize: true,
+                    delta: 300) do
       response = HTTP.get_response(uri)
       JSON.parse(response.body) if response.code = '200'
     end

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'jsoncache'
-  s.version     = '0.4.1'
+  s.version     = '0.5.0'
   s.date        = '2015-12-07'
   s.summary     = 'Simple JSON Caching'
   s.description = 'A simple JSON cache for caching data intended for use' \
