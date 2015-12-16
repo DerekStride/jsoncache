@@ -21,11 +21,11 @@ module JSONCache
   #
   # ==== Options
   #
-  # Accepted options parameters
+  # Accepted options
   #
-  # * +:symbolize+:: +Boolean+ Symbolize keys while parsing JSON.
-  # * +:cache_directory+:: +String+ The folder name in /tmp to use as the cache.
-  # * +:delta+:: +Fixnum+ The validity time of the cache in seconds.
+  # +:symbolize+:: +Boolean+ Symbolize keys while parsing JSON.
+  # +:cache_directory+:: +String+ The folder name in /tmp to use as the cache.
+  # +:delta+:: +Fixnum+ The validity time of the cache in seconds.
   #
   # ==== Examples
   #
