@@ -73,7 +73,12 @@ module JSONCache
   # +data+:: +Hash+ The data to cache.
   # +options+:: +Hash+ A hash of the parameters to use when caching.
   def cache_file(key, data, options = {})
-    return unless data.respond_to?(:to_h)
+    content =
+      if data.class == Array
+        data.to_a
+      elsif data.respond_to?(:to_h)
+        data.to_h
+      end
 
     cache_path = cache_dir(options[:cache_directory])
     existing_file = filename_from_key(key, options[:cache_directory])
@@ -82,7 +87,7 @@ module JSONCache
     File.delete(last_path) if existing_file && File.exist?(last_path)
     File.write(
       "#{cache_path}/#{key}#{Time.now.to_i}.json",
-      JSON.generate(data.to_h))
+      JSON.generate(content))
   end
 
   # Retrieves a cached value from a key
