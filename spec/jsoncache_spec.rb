@@ -90,10 +90,10 @@ describe JSONCache do
         expect(@uut.cached?(@key, @options)).to be true
       end
       it 'should be valid if it is within the healthy timeframe' do
-        expect(@uut.cached?(@key, @options.merge(delta: 20))).to be true
+        expect(@uut.cached?(@key, @options.merge(expiry: 20))).to be true
       end
       it 'should be invaild if it is outside the healthy timeframe' do
-        expect(@uut.cached?(@key, @options.merge(delta: -1))).to be false
+        expect(@uut.cached?(@key, @options.merge(expiry: -1))).to be false
       end
     end
   end
@@ -134,7 +134,7 @@ describe JSONCache do
         new_data = { 'seeya' => 'later' }
         invalid_cache_data = JSONCache.cache(
           @key,
-          @options.merge(delta: -1)) { new_data }
+          @options.merge(expiry: -1)) { new_data }
         expect(invalid_cache_data).to eq new_data
       end
     end
@@ -189,23 +189,6 @@ describe JSONCache do
       @uut.cache(@key, @options) { @sample_data }
       timestamp = @uut.timestamp_from_key(@key, @cache_directory)
       expect(timestamp).to be_within(2).of(Time.now.to_i)
-    end
-  end
-
-  describe '#cache_dir' do
-    it 'shouldnt exist to start with' do
-      expect(Dir.exist?(@cache)).to be false
-    end
-    it 'should create the directory and be /tmp/@cache_directory' do
-      dir = @uut.cache_dir(@cache_directory)
-      expect(dir).to eq @cache
-      expect(Dir.exist?(@cache)).to be true
-    end
-    it 'should handle nil' do
-      default = '/tmp/jsoncache'
-      dir = @uut.cache_dir(nil)
-      expect(dir).to eq default
-      expect(Dir.exist?(default)).to be true
     end
   end
 end
