@@ -1,5 +1,4 @@
 require 'json'
-require 'pp'
 
 # JSONCache is a simple interface to cache JSON based API calls
 #
@@ -121,7 +120,7 @@ module JSONCache
   def cache_dir(directory)
     directory ||= defaults[:cache_directory]
     cache_path = File.join('/tmp', directory)
-    Dir.mkdir(cache_path) unless Dir.exist?(cache_path)
+    FileUtils.mkdir_p(cache_path) unless Dir.exist?(cache_path)
     cache_path
   end
 
