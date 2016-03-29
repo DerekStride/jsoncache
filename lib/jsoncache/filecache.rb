@@ -1,10 +1,13 @@
 require 'json'
+require 'fileutils'
 
 module JSONCache
   # This module provides an easy to use class method +cache+ which caches json
   # in a key-value fashion to the filesystem in /tmp/jsoncache.
   module FileCache
     extend self
+
+    CACHE_DIR = '/tmp/jsoncache'.freeze
 
     # Retrieves cached data for the specified key and caches the data provided
     # if the cache isn't valid. Specify a code block after the method call that
@@ -30,11 +33,11 @@ module JSONCache
     #       query_some_json_api(uri)
     #     end
     #   end
-    def cache(key, options = {})
-      options = defaults.merge(options)
-      return retrieve_cache(key, options) if cached?(key, options)
+    def cache(*key, expiry: 0)
+      normalized_key = normalize(key)
+      return retrieve_cache(normalized_key) if cached?(normalized_key, expiry)
       result = yield
-      cache_file(key, result, options)
+      cache_file(normalized_key, result)
       result
     end
 
@@ -50,10 +53,8 @@ module JSONCache
     #
     # +key+:: +String+ The key in which to check for cached data.
     # +options+:: +Hash+ A hash of the parameters to use when caching.
-    def cached?(key, options = {})
-      options = defaults.merge(options)
-      timestamp = timestamp_from_key(key, options[:cache_directory])
-      expiry = options[:expiry]
+    def cached?(key, expiry)
+      timestamp = timestamp_from_key(key)
       if timestamp.zero?
         false
       elsif expiry.zero?
@@ -70,22 +71,18 @@ module JSONCache
     # +key+:: +String+ The key in which to check for cached data.
     # +data+:: +Hash+ The data to cache.
     # +options+:: +Hash+ A hash of the parameters to use when caching.
-    def cache_file(key, data, options = {})
-      options = defaults.merge(options)
+    def cache_file(key, data)
       begin
         content = JSON.generate(data)
       rescue
         return
       end
 
-      cache_path = cache_dir(options[:cache_directory])
-      existing_file = filename_from_key(key, options[:cache_directory])
-      last_path = "#{cache_path}/#{existing_file}"
+      existing_file = filename_from_key(key)
+      last_path = "#{cache_dir}/#{existing_file}"
 
       File.delete(last_path) if existing_file && File.exist?(last_path)
-      File.write(
-        "#{cache_path}/#{key}#{Time.now.to_i}.json",
-        content)
+      File.write("#{cache_dir}/#{key}#{Time.now.to_i}.json", content)
     end
 
     # Retrieves a cached value from a key
@@ -94,14 +91,10 @@ module JSONCache
     #
     # +key+:: +String+ The key in which to check for cached data.
     # +options+:: +Hash+ A hash of the parameters to use when caching.
-    def retrieve_cache(key, options = {})
-      options = defaults.merge(options)
-      directory = options[:cache_directory]
-      filename = filename_from_key(key, directory)
+    def retrieve_cache(key)
+      filename = filename_from_key(key)
       return nil if filename.nil?
-      JSON.parse(
-        File.read("#{cache_dir(directory)}/#{filename}"),
-        symbolize_names: options[:symbolize])
+      JSON.parse(File.read("#{cache_dir}/#{filename}"), symbolize_names: true)
     end
 
     ########################################################################
@@ -113,11 +106,9 @@ module JSONCache
     # ==== Parameters
     #
     # +directory+:: +String+ The name of the cache directory.
-    def cache_dir(directory)
-      directory ||= defaults[:cache_directory]
-      cache_path = File.join('/tmp', directory)
-      FileUtils.mkdir_p(cache_path) unless Dir.exist?(cache_path)
-      cache_path
+    def cache_dir
+      FileUtils.mkdir_p(CACHE_DIR) unless Dir.exist?(CACHE_DIR)
+      CACHE_DIR
     end
 
     # Gets an existing file from a uri if it exists
@@ -126,8 +117,9 @@ module JSONCache
     #
     # +key+:: +String+ The key in which to check for cached data.
     # +directory+:: +String+ The name of the cache directory.
-    def filename_from_key(key, directory)
-      Dir.foreach(cache_dir(directory)) do |filename|
+    def filename_from_key(key)
+      key = 'jsoncache' if key.empty?
+      Dir.foreach(cache_dir) do |filename|
         next unless filename.include?(key)
         return filename
       end
@@ -139,17 +131,17 @@ module JSONCache
     #
     # +key+:: +String+ The key in which to check for cached data.
     # +directory+:: +String+ The name of the cache directory.
-    def timestamp_from_key(key, directory)
-      path = filename_from_key(key, directory)
+    def timestamp_from_key(key)
+      path = filename_from_key(key)
       return 0 if path.nil?
       path.slice(/#{key}.*/)
-        .gsub(/^#{key}/, '')
-        .chomp('.json')
-        .to_i
+          .gsub(/^#{key}/, '')
+          .chomp('.json')
+          .to_i
     end
 
-    def defaults
-      { symbolize: false, cache_directory: 'jsoncache', expiry: 0 }
+    def normalize(key)
+      key.to_s.delete('{}()[]<>."\'=+:\/?~`!@#$%^&*|;, ')
     end
   end
 end
