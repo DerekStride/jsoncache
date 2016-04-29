@@ -6,29 +6,15 @@ A simple JSON Cache for use with HTTP APIs
 
 ```ruby
 require 'jsoncache'
-JSONCache.cache(key, options) do
-  # Code that returns a Hash
-end
-```
+Class A
+  extend JSONCache
 
-The cache method takes a key that identifies that cached data. The options parameter can be used to configure the results and operation. The acceptable keys are as followed.
-* cache_directory: String - The name of the directory where to store the cache. Default: 'jsoncache' (Internally stored at /tmp/{cache_directory})
-* symbolize: Boolean - Whether or not to use symbolize_json flag while parsing
-* delta: Fixnum - The expiry time in seconds.
-
-## Example
-
-```ruby
-# Simple Test Class for the JSONCache Module
-class JSONCacheTest
-  def query(uri, timeout = 0)
-    JSONCache.cache(uri_to_key(uri),
-                    cache_directory: 'example',
-                    symbolize: true,
-                    delta: 300) do
-      response = HTTP.get_response(uri)
-      JSON.parse(response.body) if response.code = '200'
-    end
+  def expensive_method(args)
+    # code
   end
+
+  cache :expensive_method, expiry: 300
 end
 ```
+
+The cache method will the existing method and provide it with caching to the local filesystem. You can set a TTL (time to live) for the cache by setting the `expiry` value in seconds.
