@@ -1,4 +1,4 @@
-# JSONCache
+# JSONCache [![Build Status](https://travis-ci.org/DerekStride/jsoncache.svg?branch=dynamic-caching-based-on-arguments)](https://travis-ci.org/DerekStride/jsoncache)
 
 A simple JSON Cache for use with HTTP APIs
 
